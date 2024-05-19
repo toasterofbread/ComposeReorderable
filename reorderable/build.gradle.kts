@@ -10,11 +10,11 @@ plugins {
 }
 
 group = "org.burnoutcrew.composereorderable"
-version = "0.9.7"
+version = "0.9.7-SNAPSHOT"
 
 kotlin {
     jvm()
-    js(IR) {
+    wasmJs {
         browser()
         binaries.executable()
     }

@@ -15,7 +15,7 @@ repositories {
 }
 
 kotlin {
-    js(IR) {
+    wasmJs {
         browser {
             testTask {
                 testLogging.showStandardStreams = true
@@ -28,19 +28,19 @@ kotlin {
         binaries.executable()
     }
     sourceSets {
-        val jsMain by getting {
+        val wasmJsMain by getting {
             dependencies {
-                implementation(compose.web.core)
+                // implementation(compose.web.core)
                 implementation(compose.runtime)
                 implementation(compose.material)
                 implementation(project(":reorderable"))
             }
         }
-        val jsTest by getting {
-            dependencies {
-                implementation(kotlin("test-js"))
-            }
-        }
+        // val wasmJsTest by getting {
+        //     dependencies {
+        //         implementation(kotlin("test-js"))
+        //     }
+        // }
     }
 }
 
