@@ -36,13 +36,15 @@ fun rememberReorderableLazyGridState(
     canDragOver: ((draggedOver: ItemPosition, dragging: ItemPosition) -> Boolean)? = null,
     onDragStart: ((startIndex: Int, x: Int, y: Int) -> (Unit))? = null,
     onDragEnd: ((startIndex: Int, endIndex: Int) -> (Unit))? = null,
-    maxScrollPerFrame: Dp = 20.dp,
+    scrollMargin: Dp = 0.dp,
+    scrollPerFrame: Dp = 20.dp,
     dragCancelledAnimation: DragCancelledAnimation = SpringDragCancelledAnimation()
 ): ReorderableLazyGridState {
-    val maxScroll = with(LocalDensity.current) { maxScrollPerFrame.toPx() }
+    val scrollMarginPx: Int = with(LocalDensity.current) { scrollMargin.roundToPx() }
+    val maxScrollPx: Float = with(LocalDensity.current) { scrollPerFrame.toPx() }
     val scope = rememberCoroutineScope()
     val state = remember(gridState) {
-        ReorderableLazyGridState(gridState, scope, maxScroll, onMove, canDragOver, onDragStart, onDragEnd, dragCancelledAnimation)
+        ReorderableLazyGridState(gridState, scope, scrollMarginPx, maxScrollPx, onMove, canDragOver, onDragStart, onDragEnd, dragCancelledAnimation)
     }
     LaunchedEffect(state) {
         state.visibleItemsChanged()
@@ -61,13 +63,14 @@ fun rememberReorderableLazyGridState(
 class ReorderableLazyGridState(
     val gridState: LazyGridState,
     scope: CoroutineScope,
-    maxScrollPerFrame: Float,
+    scrollMargin: Int,
+    scrollPerFrame: Float,
     onMove: (fromIndex: ItemPosition, toIndex: ItemPosition) -> (Unit),
     canDragOver: ((draggedOver: ItemPosition, dragging: ItemPosition) -> Boolean)? = null,
     onDragStart: ((startIndex: Int, x: Int, y: Int) -> (Unit))? = null,
     onDragEnd: ((startIndex: Int, endIndex: Int) -> (Unit))? = null,
     dragCancelledAnimation: DragCancelledAnimation = SpringDragCancelledAnimation()
-) : ReorderableState<LazyGridItemInfo>(scope, maxScrollPerFrame, onMove, canDragOver, onDragStart, onDragEnd, dragCancelledAnimation) {
+) : ReorderableState<LazyGridItemInfo>(scope, scrollMargin, scrollPerFrame, onMove, canDragOver, onDragStart, onDragEnd, dragCancelledAnimation) {
     override val isVerticalScroll: Boolean
         get() = gridState.layoutInfo.orientation == Orientation.Vertical
     override val LazyGridItemInfo.left: Int

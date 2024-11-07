@@ -16,7 +16,6 @@
 package org.burnoutcrew.reorderable
 
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListState
@@ -40,13 +39,15 @@ fun rememberReorderableLazyListState(
     canDragOver: ((draggedOver: ItemPosition, dragging: ItemPosition) -> Boolean)? = null,
     onDragStart: ((startIndex: Int, x: Int, y: Int) -> (Unit))? = null,
     onDragEnd: ((startIndex: Int, endIndex: Int) -> (Unit))? = null,
-    maxScrollPerFrame: Dp = 20.dp,
+    scrollMargin: Dp = 0.dp,
+    scrollPerFrame: Dp = 20.dp,
     dragCancelledAnimation: DragCancelledAnimation = SpringDragCancelledAnimation()
 ): ReorderableLazyListState {
-    val maxScroll = with(LocalDensity.current) { maxScrollPerFrame.toPx() }
+    val scrollMarginPx: Int = with(LocalDensity.current) { scrollMargin.roundToPx() }
+    val scrollPerFramePx: Float = with(LocalDensity.current) { scrollPerFrame.toPx() }
     val scope = rememberCoroutineScope()
     val state = remember(listState) {
-        ReorderableLazyListState(listState, scope, maxScroll, onMove, canDragOver, onDragStart, onDragEnd, dragCancelledAnimation)
+        ReorderableLazyListState(listState, scope, scrollMarginPx, scrollPerFramePx, onMove, canDragOver, onDragStart, onDragEnd, dragCancelledAnimation)
     }
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     LaunchedEffect(state) {
@@ -71,7 +72,8 @@ fun rememberReorderableLazyListState(
 class ReorderableLazyListState(
     val listState: LazyListState,
     scope: CoroutineScope,
-    maxScrollPerFrame: Float,
+    scrollMargin: Int,
+    scrollPerFrame: Float,
     onMove: (fromIndex: ItemPosition, toIndex: ItemPosition) -> (Unit),
     canDragOver: ((draggedOver: ItemPosition, dragging: ItemPosition) -> Boolean)? = null,
     onDragStart: ((startIndex: Int, x: Int, y: Int) -> (Unit))? = null,
@@ -79,7 +81,8 @@ class ReorderableLazyListState(
     dragCancelledAnimation: DragCancelledAnimation = SpringDragCancelledAnimation()
 ) : ReorderableState<LazyListItemInfo>(
     scope,
-    maxScrollPerFrame,
+    scrollMargin,
+    scrollPerFrame,
     onMove,
     canDragOver,
     onDragStart,
