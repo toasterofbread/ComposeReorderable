@@ -38,7 +38,8 @@ import kotlin.math.sign
 
 abstract class ReorderableState<T>(
     private val scope: CoroutineScope,
-    private val maxScrollPerFrame: Float,
+    private val scrollMargin: Int,
+    private val scrollPerFrame: Float,
     private val onMove: (fromIndex: ItemPosition, toIndex: ItemPosition) -> (Unit),
     private val canDragOver: ((draggedOver: ItemPosition, dragging: ItemPosition) -> Boolean)?,
     private val onDragStart: ((startIndex: Int, x: Int, y: Int) -> (Unit))? = null,
@@ -162,12 +163,13 @@ abstract class ReorderableState<T>(
             draggingItemIndex = targetItem.itemIndex
         }
 
-        with(calcAutoScrollOffset(0, maxScrollPerFrame)) {
+        with(calcAutoScrollOffset(0, scrollPerFrame)) {
             if (this != 0f) autoscroll(this)
         }
     }
 
     private fun autoscroll(scrollOffset: Float) {
+        println("autoscroll $scrollOffset")
         if (scrollOffset != 0f) {
             if (autoscroller?.isActive == true) {
                 return
@@ -180,7 +182,7 @@ abstract class ReorderableState<T>(
                         if (start == 0L) {
                             start = it
                         } else {
-                            scroll = calcAutoScrollOffset(it - start, maxScrollPerFrame)
+                            scroll = calcAutoScrollOffset(it - start, scrollPerFrame)
                         }
                     }
                     scrollChannel.trySend(scroll)
@@ -294,7 +296,14 @@ abstract class ReorderableState<T>(
         return target
     }
 
-    private fun calcAutoScrollOffset(time: Long, maxScroll: Float): Float {
+    private fun calcAutoScrollOffset(
+        time: Long,
+        maxScroll: Float
+    ): Float {
+        if (scrollMargin < 0) {
+            return 0f
+        }
+
         val draggingItem = draggingLayoutInfo ?: return 0f
         val startOffset: Float
         val endOffset: Float
@@ -308,27 +317,18 @@ abstract class ReorderableState<T>(
             endOffset = startOffset + draggingItem.width
             delta = draggingDelta.x
         }
+
         return when {
             delta > 0 ->
-                (endOffset - viewportEndOffset).coerceAtLeast(0f)
+                (endOffset - viewportEndOffset + scrollMargin).coerceAtLeast(0f)
             delta < 0 ->
-                (startOffset - viewportStartOffset).coerceAtMost(0f)
+                (startOffset - viewportStartOffset - scrollMargin).coerceAtMost(0f)
             else -> 0f
         }
             .let { interpolateOutOfBoundsScroll((endOffset - startOffset).toInt(), it, time, maxScroll) }
     }
 
-
     companion object {
-        private const val ACCELERATION_LIMIT_TIME_MS: Long = 1500
-        private val EaseOutQuadInterpolator: (Float) -> (Float) = {
-            val t = 1 - it
-            1 - t * t * t * t
-        }
-        private val EaseInQuintInterpolator: (Float) -> (Float) = {
-            it * it * it * it * it
-        }
-
         private fun interpolateOutOfBoundsScroll(
             viewSize: Int,
             viewSizeOutOfBounds: Float,
@@ -336,16 +336,7 @@ abstract class ReorderableState<T>(
             maxScroll: Float,
         ): Float {
             if (viewSizeOutOfBounds == 0f) return 0f
-            val outOfBoundsRatio = min(1f, 1f * viewSizeOutOfBounds.absoluteValue / viewSize)
-            val cappedScroll = sign(viewSizeOutOfBounds) * maxScroll * EaseOutQuadInterpolator(outOfBoundsRatio)
-            val timeRatio = if (time > ACCELERATION_LIMIT_TIME_MS) 1f else time.toFloat() / ACCELERATION_LIMIT_TIME_MS
-            return (cappedScroll * EaseInQuintInterpolator(timeRatio)).let {
-                if (it == 0f) {
-                    if (viewSizeOutOfBounds > 0) 1f else -1f
-                } else {
-                    it
-                }
-            }
+            return sign(viewSizeOutOfBounds) * maxScroll
         }
     }
 }

@@ -18,9 +18,6 @@ package org.burnoutcrew.reorderable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
-import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridItemInfo
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
@@ -41,14 +38,16 @@ fun rememberReorderableLazyHorizontalStaggeredGridState(
     gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     canDragOver: ((draggedOver: ItemPosition, dragging: ItemPosition) -> Boolean)? = null,
     onDragEnd: ((startIndex: Int, endIndex: Int) -> (Unit))? = null,
-    maxScrollPerFrame: Float = 20f,
+    scrollMargin: Dp = 0.dp,
+    scrollPerFrame: Dp = 20.dp,
     dragCancelledAnimation: DragCancelledAnimation = SpringDragCancelledAnimation(),
 ) = rememberReorderableLazyStaggeredGridState(
     onMove = onMove,
     gridState = gridState,
     canDragOver = canDragOver,
     onDragEnd = onDragEnd,
-    maxScrollPerFrame = maxScrollPerFrame,
+    scrollMargin = scrollMargin,
+    scrollPerFrame = scrollPerFrame,
     dragCancelledAnimation = dragCancelledAnimation,
     orientation = Orientation.Horizontal
 )
@@ -60,14 +59,16 @@ fun rememberReorderableLazyVerticalStaggeredGridState(
     gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     canDragOver: ((draggedOver: ItemPosition, dragging: ItemPosition) -> Boolean)? = null,
     onDragEnd: ((startIndex: Int, endIndex: Int) -> (Unit))? = null,
-    maxScrollPerFrame: Float = 20f,
+    scrollMargin: Dp = 0.dp,
+    scrollPerFrame: Dp = 20.dp,
     dragCancelledAnimation: DragCancelledAnimation = SpringDragCancelledAnimation(),
 ) = rememberReorderableLazyStaggeredGridState(
     onMove = onMove,
     gridState = gridState,
     canDragOver = canDragOver,
     onDragEnd = onDragEnd,
-    maxScrollPerFrame = maxScrollPerFrame,
+    scrollMargin = scrollMargin,
+    scrollPerFrame = scrollPerFrame,
     dragCancelledAnimation = dragCancelledAnimation,
     orientation = Orientation.Vertical
 )
@@ -81,17 +82,20 @@ fun rememberReorderableLazyStaggeredGridState(
     canDragOver: ((draggedOver: ItemPosition, dragging: ItemPosition) -> Boolean)? = null,
     onDragStart: ((startIndex: Int, x: Int, y: Int) -> (Unit))? = null,
     onDragEnd: ((startIndex: Int, endIndex: Int) -> (Unit))? = null,
-    maxScrollPerFrame: Float = 20F,
+    scrollMargin: Dp = 0.dp,
+    scrollPerFrame: Dp = 20.dp,
     dragCancelledAnimation: DragCancelledAnimation = SpringDragCancelledAnimation(),
     orientation: Orientation
 ): ReorderableLazyStaggeredGridState {
-    val maxScroll = with(LocalDensity.current) { maxScrollPerFrame }
+    val scrollMarginPx: Int = with(LocalDensity.current) { scrollMargin.roundToPx() }
+    val scrollPerFramePx: Float = with(LocalDensity.current) { scrollPerFrame.toPx() }
     val scope = rememberCoroutineScope()
     val state = remember(gridState) {
         ReorderableLazyStaggeredGridState(
-            gridState=gridState,
+            gridState = gridState,
             scope = scope,
-            maxScrollPerFrame = maxScrollPerFrame,
+            scrollMargin = scrollMarginPx,
+            scrollPerFrame = scrollPerFramePx,
             onMove = onMove,
             onDragStart = onDragStart,
             canDragOver = canDragOver,
@@ -118,7 +122,8 @@ fun rememberReorderableLazyStaggeredGridState(
 class ReorderableLazyStaggeredGridState(
     val gridState: LazyStaggeredGridState,
     scope: CoroutineScope,
-    maxScrollPerFrame: Float,
+    scrollMargin: Int,
+    scrollPerFrame: Float,
     onMove: (fromIndex: ItemPosition, toIndex: ItemPosition) -> (Unit),
     canDragOver: ((draggedOver: ItemPosition, dragging: ItemPosition) -> Boolean)? = null,
     onDragStart: ((startIndex: Int, x: Int, y: Int) -> (Unit))? = null,
@@ -127,7 +132,8 @@ class ReorderableLazyStaggeredGridState(
     val orientation: Orientation
 ) : ReorderableState<LazyStaggeredGridItemInfo>(
     scope = scope,
-    maxScrollPerFrame = maxScrollPerFrame,
+    scrollMargin = scrollMargin,
+    scrollPerFrame = scrollPerFrame,
     onMove = onMove,
     onDragStart = onDragStart,
     canDragOver = canDragOver,
