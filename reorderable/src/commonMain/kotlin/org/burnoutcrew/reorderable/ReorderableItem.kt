@@ -24,8 +24,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
-import androidx.compose.foundation.lazy.grid.LazyGridScope
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridItemScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -46,7 +44,7 @@ fun LazyItemScope.ReorderableItem(
     reorderableState,
     key,
     modifier,
-    Modifier.animateItemPlacement(),
+    Modifier.animateItem(),
     orientationLocked,
     index,
     content
@@ -64,7 +62,7 @@ fun LazyGridItemScope.ReorderableItem(
     reorderableState,
     key,
     modifier,
-    Modifier.animateItemPlacement(),
+    Modifier.animateItem(),
     false,
     index,
     content
