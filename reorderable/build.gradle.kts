@@ -1,20 +1,28 @@
+@file:Suppress("OPT_IN_USAGE")
+
 import org.jetbrains.compose.ComposeBuildConfig.composeVersion
+import java.util.Properties
 
 plugins {
     kotlin("multiplatform")
+    kotlin("plugin.compose")
     id("org.jetbrains.compose")
-    id("maven-publish")
-    id("signing")
+//    id("maven-publish")
+//    id("signing")
+    id("com.vanniktech.maven.publish")
 }
 
 group = "org.burnoutcrew.composereorderable"
-version = "0.9.7"
+version = "0.9.7-syk1"
 
 kotlin {
     jvm()
     js(IR) {
         browser()
-        binaries.executable()
+//        binaries.executable()
+    }
+    wasmJs {
+        browser()
     }
     sourceSets {
         val commonMain by getting {
@@ -27,28 +35,42 @@ kotlin {
     }
 }
 
-val javadocJar = tasks.register("javadocJar", Jar::class.java) {
-    archiveClassifier.set("javadoc")
-}
+//val javadocJar = tasks.register("javadocJar", Jar::class.java) {
+//    archiveClassifier.set("javadoc")
+//}
 
 publishing {
     publications {
         repositories {
             maven {
-                name="oss"
-                val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-                val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-                url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
-                credentials {
-                    username = extra.properties.getOrDefault("ossrh.Username", "") as String
-                    password = extra.properties.getOrDefault("ossrh.Password", "") as String
+                val localProperties: Properties = Properties()
+                val localPropertiesFile: File = rootProject.file("local.properties")
+                if (localPropertiesFile.isFile) {
+                    localProperties.load(localPropertiesFile.reader())
+                }
+
+                name = "SykSh"
+                url = uri("https://maven.syk.sh/releases")
+                credentials(PasswordCredentials::class) {
+                    this.username = localProperties["publishing.syksh.user"] as String?
+                    this.password = localProperties["publishing.syksh.key"] as String?
                 }
             }
+//            maven {
+//                name="oss"
+//                val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+//                val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+//                url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+//                credentials {
+//                    username = extra.properties.getOrDefault("ossrh.Username", "") as String
+//                    password = extra.properties.getOrDefault("ossrh.Password", "") as String
+//                }
+//            }
         }
     }
     publications {
         withType<MavenPublication> {
-            artifact(javadocJar)
+//            artifact(javadocJar)
             pom {
                 name.set("ComposeReorderable")
                 description.set("Reorderable Compose LazyList")
@@ -78,6 +100,6 @@ publishing {
     }
 }
 
-signing {
-    sign(publishing.publications)
-}
+//signing {
+//    sign(publishing.publications)
+//}
