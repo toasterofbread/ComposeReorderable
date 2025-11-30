@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "org.burnoutcrew.composereorderable"
-version = "0.9.7-syk1"
+version = "0.9.7-syk2"
 
 kotlin {
     jvm()

@@ -169,7 +169,6 @@ abstract class ReorderableState<T>(
     }
 
     private fun autoscroll(scrollOffset: Float) {
-        println("autoscroll $scrollOffset")
         if (scrollOffset != 0f) {
             if (autoscroller?.isActive == true) {
                 return
