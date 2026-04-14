@@ -1,6 +1,7 @@
 @file:Suppress("OPT_IN_USAGE")
 
 import org.jetbrains.compose.ComposeBuildConfig.composeVersion
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
@@ -16,7 +17,13 @@ group = "org.burnoutcrew.composereorderable"
 version = "0.9.7-syk2"
 
 kotlin {
-    jvm()
+    jvmToolchain(17)
+
+    jvm {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
     js(IR) {
         browser()
 //        binaries.executable()
